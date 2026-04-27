@@ -2,7 +2,7 @@
   "name": "@speconn/typespec-speconn-rust",
   "version": "0.0.1",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/src/index.js",
   "typespec": {
     "emitter": true,
     "options": {
@@ -17,6 +17,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "watch": "tsc --watch"
   },
   "devDependencies": {
