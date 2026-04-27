@@ -2,8 +2,7 @@
   "name": "@speconn/typespec-speconn-rust",
   "version": "0.0.1",
   "type": "module",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "src/index.ts",
   "typespec": {
     "emitter": true,
     "options": {
