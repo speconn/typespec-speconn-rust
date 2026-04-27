@@ -1,0 +1,28 @@
+{
+  "name": "@speconn/typespec-speconn-rust",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "typespec": {
+    "emitter": true,
+    "options": {
+      "@speconn/typespec-speconn-rust": {
+        "type": "object",
+        "properties": {
+          "emitter-output-dir": { "type": "string" }
+        },
+        "required": ["emitter-output-dir"]
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "1.11.0",
+    "@typespec/http": "1.11.0",
+    "typescript": "^5.8.0"
+  }
+}
