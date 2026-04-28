@@ -268,20 +268,20 @@ function emitRust(program: Program, services: ServiceInfo[], outputDir: string):
     const clientTypeImports = svc.models.filter(m => m.name).map(m => m.name);
     const clientProcImports = svc.rpcs.map(rpc => `${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE`);
     client.push(`use crate::${typesMod}::{${[...clientTypeImports, ...clientProcImports].join(", ")}};\n`);
-    client.push(`pub struct ${svc.serviceName}Client<C: speconn::HttpClient = reqwest::Client> {`);
+    client.push(`pub struct ${svc.serviceName}Client<C: speconn::HttpClient = speconn::reqwest::Client> {`);
     client.push(`    inner: SpeconnClientBase<C>,`);
     client.push('}\n');
     client.push(`impl<C: speconn::HttpClient> ${svc.serviceName}Client<C> {`);
     client.push(`    pub fn new(http_client: C, base_url: &str) -> Self { ${svc.serviceName}Client { inner: SpeconnClientBase::new(base_url, http_client) } }`);
     client.push('}\n');
-    client.push(`impl ${svc.serviceName}Client<reqwest::Client> {`);
-    client.push(`    pub fn new_default(base_url: &str) -> Self { Self::new(reqwest::Client::new(), base_url) }`);
+    client.push(`impl ${svc.serviceName}Client<speconn::reqwest::Client> {`);
+    client.push(`    pub fn new_default(base_url: &str) -> Self { Self::new(speconn::reqwest::Client::new(), base_url) }`);
     for (const rpc of svc.rpcs) {
       if (rpc.isStream) {
-        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, reqwest::Client> {`);
+        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, speconn::reqwest::Client> {`);
         client.push(`        self.inner.request(${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE, req)`);
       } else {
-        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, reqwest::Client> {`);
+        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, speconn::reqwest::Client> {`);
         client.push(`        self.inner.request(${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE, req)`);
       }
       client.push(`    }`);
