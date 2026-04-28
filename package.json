@@ -1,6 +1,6 @@
 {
   "name": "@speconn/typespec-speconn-rust",
-  "version": "0.0.1",
+  "version": "0.0.10",
   "type": "module",
   "main": "dist/src/index.js",
   "typespec": {
