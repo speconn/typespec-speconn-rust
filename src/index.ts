@@ -278,10 +278,10 @@ function emitRust(program: Program, services: ServiceInfo[], outputDir: string):
     client.push(`    pub fn new_default(base_url: &str) -> Self { Self::new(reqwest::Client::new(), base_url) }`);
     for (const rpc of svc.rpcs) {
       if (rpc.isStream) {
-        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, ${resName(rpc)}, ${reqName(rpc)}> {`);
+        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, reqwest::Client> {`);
         client.push(`        self.inner.request(${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE, req)`);
       } else {
-        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, ${resName(rpc)}, ${reqName(rpc)}> {`);
+        client.push(`    pub fn ${rpc.name}(&self, req: ${reqName(rpc)}) -> speconn::RequestBuilder<'_, reqwest::Client> {`);
         client.push(`        self.inner.request(${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE, req)`);
       }
       client.push(`    }`);
