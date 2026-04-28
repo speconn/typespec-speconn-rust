@@ -246,7 +246,7 @@ function emitRust(program: Program, services: ServiceInfo[], outputDir: string):
     server.push(`use speconn::{SpeconnRouter, SpeconnContext, SpeconnError};`);
     const serverTypeImports = svc.models.filter(m => m.name).map(m => m.name);
     const serverProcImports = svc.rpcs.map(rpc => `${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE`);
-    server.push(`use ${typesMod}::{${[...serverTypeImports, ...serverProcImports].join(", ")}};\n`);
+    server.push(`use crate::${typesMod}::{${[...serverTypeImports, ...serverProcImports].join(", ")}};\n`);
     server.push(`pub fn ${snakeBase(svc.serviceName)}_router(`);
     for (const rpc of svc.rpcs) {
       server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, ${reqName(rpc)}) -> Result<${resName(rpc)}, SpeconnError> + Send + Sync + 'static,`);
@@ -263,7 +263,7 @@ function emitRust(program: Program, services: ServiceInfo[], outputDir: string):
     client.push(`use speconn::{SpeconnClient as SpeconnClientBase, SpeconnError, Transport};`);
     const clientTypeImports = svc.models.filter(m => m.name).map(m => m.name);
     const clientProcImports = svc.rpcs.map(rpc => `${constPrefix}_${rpc.originalName.toUpperCase()}_PROCEDURE`);
-    client.push(`use ${typesMod}::{${[...clientTypeImports, ...clientProcImports].join(", ")}};\n`);
+    client.push(`use crate::${typesMod}::{${[...clientTypeImports, ...clientProcImports].join(", ")}};\n`);
     client.push(`pub struct ${svc.serviceName}Client<T: Transport> {`);
     client.push(`    inner: SpeconnClientBase<T>,`);
     client.push('}\n');
