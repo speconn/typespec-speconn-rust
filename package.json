@@ -1,17 +1,21 @@
 {
-  "name": "@speconn/typespec-speconn-rust",
-  "version": "0.0.10",
+  "name": "@speconn/typespec-emitter-rust",
+  "version": "0.0.13",
   "type": "module",
   "main": "dist/src/index.js",
   "typespec": {
     "emitter": true,
     "options": {
-      "@speconn/typespec-speconn-rust": {
+      "@speconn/typespec-emitter-rust": {
         "type": "object",
         "properties": {
-          "emitter-output-dir": { "type": "string" }
+          "emitter-output-dir": {
+            "type": "string"
+          }
         },
-        "required": ["emitter-output-dir"]
+        "required": [
+          "emitter-output-dir"
+        ]
       }
     }
   },
@@ -24,5 +28,8 @@
     "@typespec/compiler": "1.11.0",
     "@typespec/http": "1.11.0",
     "typescript": "^5.8.0"
+  },
+  "dependencies": {
+    "@speconn/typespec-emitter-core": "^0.0.4"
   }
 }
