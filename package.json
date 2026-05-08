@@ -1,6 +1,6 @@
 {
   "name": "@speconn/typespec-emitter-rust",
-  "version": "0.0.13",
+  "version": "0.0.19",
   "type": "module",
   "main": "dist/src/index.js",
   "typespec": {
@@ -11,6 +11,16 @@
         "properties": {
           "emitter-output-dir": {
             "type": "string"
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "both",
+              "client",
+              "server"
+            ],
+            "default": "both",
+            "description": "Generate 'client' only, 'server' only, or 'both' (default)"
           }
         },
         "required": [
@@ -30,6 +40,10 @@
     "typescript": "^5.8.0"
   },
   "dependencies": {
-    "@speconn/typespec-emitter-core": "^0.0.4"
+    "@speconn/typespec-emitter-core": "^0.0.6"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://10.199.64.20:3000/api/packages/speconn/npm/"
   }
 }
