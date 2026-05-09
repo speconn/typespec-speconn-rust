@@ -50,17 +50,31 @@ async function emitRust(program: Program, services: ServiceInfo[], outputDir: st
     server.push('');
     server.push(`pub fn ${snake}_router(`);
     for (const rpc of svc.rpcs) {
-      if (rpc.isStream) {
-        server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, ${reqName(rpc)}, Box<dyn Fn(${resName(rpc)}) + Send + Sync>) -> Result<(), SpeconnError> + Send + Sync + 'static,`);
-      } else {
-        server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, ${reqName(rpc)}) -> Result<${resName(rpc)}, SpeconnError> + Send + Sync + 'static,`);
+      switch (rpc.streamType) {
+        case "server":
+          server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, ${reqName(rpc)}, Box<dyn Fn(${resName(rpc)}) + Send + Sync>) -> Result<(), SpeconnError> + Send + Sync + 'static,`);
+          break;
+        case "client":
+          server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, Box<dyn Fn() -> Option<${reqName(rpc)}> + Send + Sync>) -> Result<${resName(rpc)}, SpeconnError> + Send + Sync + 'static,`);
+          break;
+        case "bidi":
+          server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, Box<dyn Fn() -> Option<${reqName(rpc)}> + Send + Sync>, Box<dyn Fn(${resName(rpc)}) + Send + Sync>) -> Result<(), SpeconnError> + Send + Sync + 'static,`);
+          break;
+        default:
+          server.push(`    ${rpc.name}_fn: impl Fn(&SpeconnContext, ${reqName(rpc)}) -> Result<${resName(rpc)}, SpeconnError> + Send + Sync + 'static,`);
       }
     }
     server.push(`) -> SpeconnRouter {`);
     server.push(`    SpeconnRouter::new()`);
     for (const rpc of svc.rpcs) {
       const proc = `${constPfx}_${toScreamingSnakeCase(rpc.originalName)}_PROCEDURE`;
-      const method = rpc.isStream ? "server_stream" : "unary";
+      let method: string;
+      switch (rpc.streamType) {
+        case "server": method = "server_stream"; break;
+        case "client": method = "client_stream"; break;
+        case "bidi": method = "bidi_stream"; break;
+        default: method = "unary";
+      }
       server.push(`        .${method}(${proc}, ${reqCodec(rpc)}, ${resCodec(rpc)}, ${rpc.name}_fn)`);
     }
     server.push(`}\n`);
@@ -76,7 +90,7 @@ async function emitRust(program: Program, services: ServiceInfo[], outputDir: st
     const _clientProcConsts = svc.rpcs.map(rpc => `${constPfx}_${toScreamingSnakeCase(rpc.originalName)}_PROCEDURE`);
     const allClientImports = [...new Set([...clientTypeImports, ...clientCodecImports])];
     client.push(`use ${typesModPath}::{${allClientImports.join(", ")}};`);
-    client.push(`use speconn_runtime_rust::{SpeconnError, CallOptions, Response, StreamResponse};\n`);
+    client.push(`use speconn_runtime_rust::{SpeconnError, CallOptions, Response, StreamResponse, ClientStreamHandle, BidiStreamHandle};\n`);
     for (const rpc of svc.rpcs) {
       client.push(`const ${constPfx}_${toScreamingSnakeCase(rpc.originalName)}_PROCEDURE: &str = "${rpc.path}";`);
     }
@@ -96,12 +110,22 @@ async function emitRust(program: Program, services: ServiceInfo[], outputDir: st
     client.push(`        }`);
     client.push(`    }`);
     for (const rpc of svc.rpcs) {
-      if (rpc.isStream) {
-        client.push(`    pub async fn ${rpc.name}(&self, req: ${reqName(rpc)}, options: CallOptions) -> Result<StreamResponse<${resName(rpc)}>, SpeconnError> {`);
-        client.push(`        self.${rpc.name}.stream(${reqCodec(rpc)}, &req, ${resCodec(rpc)}, options).await`);
-      } else {
-        client.push(`    pub async fn ${rpc.name}(&self, req: ${reqName(rpc)}, options: CallOptions) -> Result<Response<${resName(rpc)}>, SpeconnError> {`);
-        client.push(`        self.${rpc.name}.call(${reqCodec(rpc)}, &req, ${resCodec(rpc)}, options).await`);
+      switch (rpc.streamType) {
+        case "server":
+          client.push(`    pub async fn ${rpc.name}(&self, req: ${reqName(rpc)}, options: CallOptions) -> Result<StreamResponse<${resName(rpc)}>, SpeconnError> {`);
+          client.push(`        self.${rpc.name}.stream(${reqCodec(rpc)}, &req, ${resCodec(rpc)}, options).await`);
+          break;
+        case "client":
+          client.push(`    pub fn ${rpc.name}(&self, options: CallOptions) -> ClientStreamHandle<${reqName(rpc)}, ${resName(rpc)}> {`);
+          client.push(`        self.${rpc.name}.client_stream(${reqCodec(rpc)}, ${resCodec(rpc)}, options)`);
+          break;
+        case "bidi":
+          client.push(`    pub fn ${rpc.name}(&self, options: CallOptions) -> BidiStreamHandle<${reqName(rpc)}, ${resName(rpc)}> {`);
+          client.push(`        self.${rpc.name}.bidi(${reqCodec(rpc)}, ${resCodec(rpc)}, options)`);
+          break;
+        default:
+          client.push(`    pub async fn ${rpc.name}(&self, req: ${reqName(rpc)}, options: CallOptions) -> Result<Response<${resName(rpc)}>, SpeconnError> {`);
+          client.push(`        self.${rpc.name}.call(${reqCodec(rpc)}, &req, ${resCodec(rpc)}, options).await`);
       }
       client.push(`    }`);
     }

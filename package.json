@@ -40,7 +40,7 @@
     "typescript": "^5.8.0"
   },
   "dependencies": {
-    "@speconn/typespec-emitter-core": "^0.0.6"
+    "@speconn/typespec-emitter-core": "^0.0.11"
   },
   "publishConfig": {
     "access": "public",
